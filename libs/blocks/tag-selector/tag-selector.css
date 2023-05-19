@@ -1,0 +1,8 @@
+.tag-selector aside,
+.tag-selector main {
+  display: block;
+}
+
+.tag-input {
+  display: block;
+}

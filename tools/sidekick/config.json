@@ -84,6 +84,15 @@
       "environments": [ "edit", "dev", "preview" ],
       "url": "/tools/ost",
       "includePaths": [ "**.docx**" ]
+    },
+    {
+      "containerId": "tools",
+      "title": "Tag Selector",
+      "id": "tag-selector",
+      "environments": ["edit"],
+      "url": "http://localhost:3000/drafts/methomas/tag-selector",
+      "isPalette": true,
+      "paletteRect": "top: 150px; left: 7%; height: 675px; width: 85vw;"
     }
   ]
 }
