@@ -4,6 +4,7 @@ import createPortal from '../../deps/portal.js'; // '../../deps/portal.js';
 import useOnClickOutside from '../../hooks/useOnClickOutside.js';
 import useLockBodyScroll from '../../hooks/useLockBodyScroll.js';
 import useDebounce from '../../hooks/useDebounce.js';
+import Tag from '../../ui/controls/TagSelectColumns.js';
 
 const { miloLibs, codeRoot } = getConfig();
 loadStyle(`${miloLibs || codeRoot}/ui/controls/tagSelector.css`);
@@ -179,19 +180,14 @@ const TagSelectModal = ({
   const getCols = (root) => {
     const items = Object.entries(root.children || root).map(([id, option]) => {
       const isChecked = value.includes(id);
-      return html`
-        <div
-          class="tagselect-item"
-          key=${id}
-          data-key=${id}
-          onClick=${option.children ? onExpand : onCheck}
-        >
-          <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" /><label
-            class="label"
-            >${option.label.replace('&amp;', '&')}</label
-          ><span class=${option.children ? 'has-children' : ''}></span>
-        </div>
-      `;
+      return html`<${Tag}
+        id=${id}
+        label=${option.label}
+        hasChildren=${option.children}
+        isChecked=${isChecked}
+        onCheck=${onCheck}
+        onExpand=${onExpand}
+      />`;
     });
     return html`<div class="col">${items}</div>`;
   };
@@ -202,7 +198,6 @@ const TagSelectModal = ({
       .filter(([, { label }]) => label.toLowerCase().includes(lowerSearchTerm))
       .map(([id, { label, path }]) => {
         const isChecked = value.includes(id);
-
         return html`
           <div class="search-item" onClick=${onCheck}>
             <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" />
