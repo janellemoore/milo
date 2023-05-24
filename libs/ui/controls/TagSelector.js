@@ -101,7 +101,7 @@ const TagSelectDropdown = ({
   `;
 };
 
-const TagSelectModal = ({
+const TagSelectMain = ({
   close,
   onToggle,
   options = {},
@@ -131,10 +131,7 @@ const TagSelectModal = ({
     }
   }, [debouncedSearchTerm]);
 
-  const onCheck = (e) => {
-    e.preventDefault();
-    const inputEl = e.currentTarget.firstChild;
-
+  const onCheck = ({ target: inputEl }) => {
     if (singleSelect) {
       onToggle(inputEl.id);
       close();
@@ -150,11 +147,6 @@ const TagSelectModal = ({
   };
 
   const onExpand = (e) => {
-    if (e.target.type === 'checkbox') {
-      onCheck(e);
-      return;
-    }
-
     const itemEl = e.target.classList.contains('tagselect-item')
       ? e.target
       : e.target.parentElement;
@@ -211,17 +203,44 @@ const TagSelectModal = ({
   };
 
   return html`
+    <div class="tagselect-main">
+      <input
+        class="tagselect-modal-search"
+        placeholder="Search..."
+        onInput=${(e) => setSearchTerm(e.target.value)}
+        type="search"
+      />
+      ${!isSearching && html`<div class="tagselect-modal-cols">${columns}</div>`}
+      ${isSearching && html`<div class="tagselect-modal-table">${getSearchResults()}</div>`}
+    </div>
+  `;
+};
+
+const TagSelectModal = ({
+  close,
+  onToggle,
+  options = {},
+  optionMap = {},
+  singleSelect = false,
+  value = [],
+}) => {
+  const modalRef = useRef(null);
+
+  useOnClickOutside(modalRef, close);
+  useLockBodyScroll();
+
+  return html`
     <div class="tagselect-modal-overlay">
       <div class="tagselect-modal" ref=${modalRef}>
-        <input
-          class="tagselect-modal-search"
-          placeholder="Search..."
-          onInput=${(e) => setSearchTerm(e.target.value)}
-          type="search"
-        />
         <button class="tagselect-modal-close" onClick=${close}></button>
-        ${!isSearching && html`<div class="tagselect-modal-cols">${columns}</div>`}
-        ${isSearching && html`<div class="tagselect-modal-table">${getSearchResults()}</div>`}
+        <${TagSelectMain}
+          close=${close}
+          onToggle=${onToggle}
+          options=${options}
+          optionMap=${optionMap}
+          singleSelect=${singleSelect}
+          value=${value}
+        />
       </div>
     </div>
   `;
@@ -311,7 +330,7 @@ const TagSelect = ({
             viewBox="0 0 20 20"
             aria-hidden="true"
             focusable="false"
-            class="tagselect-tag-closeX"
+            class="tagselect-tag-close"
           >
             <path
               d="M14.348 14.849c-0.469 0.469-1.229 0.469-1.697 0l-2.651-3.030-2.651 3.029c-0.469 0.469-1.229 0.469-1.697 0-0.469-0.469-0.469-1.229 0-1.697l2.758-3.15-2.759-3.152c-0.469-0.469-0.469-1.228 0-1.697s1.228-0.469 1.697 0l2.652 3.031 2.651-3.031c0.469-0.469 1.228-0.469 1.697 0s0.469 1.229 0 1.697l-2.758 3.152 2.758 3.15c0.469 0.469 0.469 1.229 0 1.698z"
