@@ -1,4 +1,7 @@
 import { html, render, useState, useEffect } from '../../deps/htm-preact.js';
+import Picker from '../../ui/controls/TagSelectPicker.js';
+import { createOptionMap } from '../../ui/controls/TagSelector.js';
+import { loadCaasTags } from '../caas/utils.js';
 
 function processTags(tagData, tagArr = []) {
   let tagA = tagArr.length > 0 ? tagArr : [];
@@ -36,85 +39,97 @@ function TagPreview({ selectedTags }) {
   `;
 }
 
-function AddTag({ currentTags, setTag }) {
-  function handleAddTag() {
-    const selected = document.querySelector('.tag-options').value;
-    setTag([...currentTags, selected]);
-  }
-
-  return html`<button onClick=${() => handleAddTag()}>Add this tag</button>`;
-}
-
-// ToDo: Build search functionality
-function Search() {
-  return html`<input value="" placeholder="Search..." />`;
-}
-
-function Tag({ id, label, children }) {
-  function showChildren(tagId) {
-    console.log('showChildren', tagId);
-  }
-
-  return html`
-    <div class="tag">
-      ${id ? html`<input id="${id}" type="checkbox" />` : ''}
-      <label>${label}</label>
-      ${children ? html`<button onClick=${() => showChildren(id)}> > </button>` : ''}
-    </div>
-  `;
-}
-
-function Columns({ tags, lastSelected = 'audience', setLastSelected }) {
-  const tagKeys = Object.keys(tags);
-  console.log('tagKeys', tagKeys);
-
-  const hasLastSelected = tagKeys.includes(lastSelected);
-  console.log(hasLastSelected);
-  // ToDo: Show one row after last selected and no more
-
-  tagKeys.forEach((key) => {
-    return html`<section></section>`;
-  });
-}
-
-function TagSelector() {
+function TagSelector({
+  selectedTags = [],
+}) {
   const [tags, setTags] = useState([]);
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [lastSelected, setLastSelected] = useState();
+  const [options, setOptions] = useState({});
+  // const [selectedTags, setSelectedTags] = useState([]);
+  // const [lastSelected, setLastSelected] = useState();
+
+  // From caas-config.js
+  const getTagTree = (root) => {
+    const options = Object.entries(root).reduce((opts, [, tag]) => {
+      opts[tag.tagID] = {};
+  
+      if (Object.keys(tag.tags).length) {
+        opts[tag.tagID].children = getTagTree(tag.tags);
+      }
+  
+      opts[tag.tagID].label = tag.title;
+      opts[tag.tagID].path = tag.path.replace('/content/cq:tags/caas/', '');
+  
+      return opts;
+    }, {});
+    return options;
+  };
 
   useEffect(async () => {
-    async function fetchCaasData() {
+    // async function fetchCaasData() {
       const tagUrl = 'https://www.adobe.com/chimera-api/tags';
-      const tagResp = await fetch(tagUrl);
-      if (!tagResp.ok) return {};
-      const json = await tagResp.json();
-      return json;
-    }
-    const data = await fetchCaasData();
-    // console.log('data', data);
-    // const allTags = processTags(data.namespaces.caas.tags);
-    const caasTags = data.namespaces.caas.tags;
-    console.log('caasTags', caasTags);
+    //   const tagResp = await fetch(tagUrl);
+    //   if (!tagResp.ok) return {};
+    //   const json = await tagResp.json();
+    //   return json;
+    // }
+    // const data = await fetchCaasData();
+    // // console.log('data', data);
+    // // const allTags = processTags(data.namespaces.caas.tags);
+    // const caasTags = data.namespaces.caas.tags;
+    // console.log('caasTags', caasTags);
+    const { tags: caasTags, errorMsg } = await loadCaasTags(tagUrl);
+    if (errorMsg) console.log(`Error fetching caas tags: ${errorMsg}`);
     setTags(caasTags);
+    setOptions(getTagTree(caasTags));
   }, []);
 
+  const [optionMap, setOptionMap] = useState({});
+
+  useEffect(() => {
+    const hasNestedData = Object.values(options).some((val) => typeof val !== 'string');
+
+    if (hasNestedData) {
+      setOptionMap(createOptionMap(options));
+    } else {
+      setOptionMap(options);
+    }
+
+    if (!Array.isArray(selectedTags)) {
+      onChange([]);
+    }
+  }, [options]);
+
+  const addOption = (val) => {
+    if (!selectedTags.includes(val)) {
+      selectedTags.push(val);
+    }
+    onChange(singleSelect ? [val] : [...selectedTags]);
+  };
+
+  const removeOption = (val) => {
+    const optionIndex = selectedTags.indexOf(val);
+    if (optionIndex === -1) return;
+    selectedTags.splice(optionIndex, 1);
+    onChange([...selectedTags]);
+  };
+
+  const toggleTag = (val) => {
+    if (selectedTags.includes(val)) {
+      removeOption(val);
+    } else {
+      addOption(val);
+    }
+  };
+
+  // <${TagPreview} selectedTags=${selectedTags} />
+
   return html`
-    <article class="tag-selector">
-      <aside>
-        <${Search}/>
-        <${TagPreview} selectedTags=${selectedTags} />
-      </aside>
-      <main>
-        <section class="tag-source">
-          <${Tag} label="CaaS Tags" children=${tags} />
-          <!-- Add Consumer Tags Here -->
-        </section>
-        <div class="tag-columns">
-          <${Columns} tags=${tags} lastSelected=${lastSelected} setLastSelected=${setLastSelected} />
-        </div>
-        <${AddTag} currentTags=${selectedTags} setTag=${setSelectedTags} />
-      </main>
-    </article>
+    <${Picker}
+      toggleTag=${toggleTag}
+      options=${options}
+      optionMap=${optionMap}
+      selectedTags=${selectedTags}
+    />
   `;
 }
 

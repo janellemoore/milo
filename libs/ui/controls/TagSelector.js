@@ -3,8 +3,7 @@ import { getConfig, loadStyle } from '../../utils/utils.js';
 import createPortal from '../../deps/portal.js'; // '../../deps/portal.js';
 import useOnClickOutside from '../../hooks/useOnClickOutside.js';
 import useLockBodyScroll from '../../hooks/useLockBodyScroll.js';
-import useDebounce from '../../hooks/useDebounce.js';
-import Tag from '../../ui/controls/TagSelectColumns.js';
+import Picker from './TagSelectPicker.js';
 
 const { miloLibs, codeRoot } = getConfig();
 loadStyle(`${miloLibs || codeRoot}/ui/controls/tagSelector.css`);
@@ -101,121 +100,6 @@ const TagSelectDropdown = ({
   `;
 };
 
-const TagSelectMain = ({
-  close,
-  onToggle,
-  options = {},
-  optionMap = {},
-  singleSelect = false,
-  value = [],
-}) => {
-  const [columns, setColumns] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const modalRef = useRef(null);
-
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
-
-  useOnClickOutside(modalRef, close);
-  useLockBodyScroll();
-
-  useEffect(() => {
-    setColumns([getCols(options)]);
-  }, []);
-
-  useEffect(() => {
-    if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
-      setIsSearching(true);
-    } else {
-      setIsSearching(false);
-    }
-  }, [debouncedSearchTerm]);
-
-  const onCheck = ({ target: inputEl }) => {
-    if (singleSelect) {
-      onToggle(inputEl.id);
-      close();
-      return;
-    }
-
-    if (inputEl.classList.contains('checked')) {
-      inputEl.classList.remove('checked');
-    } else {
-      inputEl.classList.add('checked');
-    }
-    onToggle(inputEl.id);
-  };
-
-  const onExpand = (e) => {
-    const itemEl = e.target.classList.contains('tagselect-item')
-      ? e.target
-      : e.target.parentElement;
-
-    itemEl.parentElement.childNodes.forEach((node) => node.classList.remove('expanded'));
-    itemEl.classList.add('expanded');
-
-    const cols = [];
-    const addColumn = (option) => {
-      cols.unshift(getCols(option));
-      if (option.parent) {
-        addColumn(option.parent);
-      }
-    };
-
-    const { key: selectedKey } = itemEl.dataset;
-    addColumn(optionMap[selectedKey]);
-    cols.unshift(getCols(options)); // add the root
-
-    setColumns(cols);
-  };
-
-  const getCols = (root) => {
-    const items = Object.entries(root.children || root).map(([id, option]) => {
-      const isChecked = value.includes(id);
-      return html`<${Tag}
-        id=${id}
-        label=${option.label}
-        hasChildren=${option.children}
-        isChecked=${isChecked}
-        onCheck=${onCheck}
-        onExpand=${onExpand}
-      />`;
-    });
-    return html`<div class="col">${items}</div>`;
-  };
-
-  const getSearchResults = () => {
-    const lowerSearchTerm = debouncedSearchTerm.toLowerCase();
-    return Object.entries(optionMap)
-      .filter(([, { label }]) => label.toLowerCase().includes(lowerSearchTerm))
-      .map(([id, { label, path }]) => {
-        const isChecked = value.includes(id);
-        return html`
-          <div class="search-item" onClick=${onCheck}>
-            <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" />
-            <label>
-              <span class="label">${label}</span>
-              <span class="path">${path}</span>
-            </label>
-          </div>
-        `;
-      });
-  };
-
-  return html`
-    <div class="tagselect-main">
-      <input
-        class="tagselect-modal-search"
-        placeholder="Search..."
-        onInput=${(e) => setSearchTerm(e.target.value)}
-        type="search"
-      />
-      ${!isSearching && html`<div class="tagselect-modal-cols">${columns}</div>`}
-      ${isSearching && html`<div class="tagselect-modal-table">${getSearchResults()}</div>`}
-    </div>
-  `;
-};
-
 const TagSelectModal = ({
   close,
   onToggle,
@@ -233,20 +117,20 @@ const TagSelectModal = ({
     <div class="tagselect-modal-overlay">
       <div class="tagselect-modal" ref=${modalRef}>
         <button class="tagselect-modal-close" onClick=${close}></button>
-        <${TagSelectMain}
+        <${Picker}
           close=${close}
-          onToggle=${onToggle}
+          toggleTag=${onToggle}
           options=${options}
           optionMap=${optionMap}
           singleSelect=${singleSelect}
-          value=${value}
+          selectedTags=${value}
         />
       </div>
     </div>
   `;
 };
 
-const createOptionMap = (root) => {
+export const createOptionMap = (root) => {
   const newOptionMap = {};
   const parseNode = (nodes, parent) => {
     Object.entries(nodes).forEach(([key, val]) => {
