@@ -14,10 +14,11 @@ const Tag = ({
       class="tagselect-item"
       key=${id}
       data-key=${id}
+      onClick=${hasChildren ? onExpand : onCheck}
     >
-      <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" onClick=${onCheck} />
-      <label class="label" for=${id}>${label?.replace('&amp;', '&')}</label>
-      ${hasChildren ? html`<button class="has-children" onClick=${onExpand}></button>` : ''}
+      <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" />
+      <label class="label">${label?.replace('&amp;', '&')}</label>
+      ${hasChildren ? html`<span class="has-children"></span>` : ''}
     </div>
   `;
 };
@@ -47,7 +48,10 @@ const Picker = ({
     }
   }, [debouncedSearchTerm]);
 
-  const onCheck = ({ target: inputEl }) => {
+  const onCheck = (e) => {
+    e.preventDefault();
+    const inputEl = e.currentTarget.firstChild;
+
     if (singleSelect) {
       toggleTag(inputEl.id);
       close();
@@ -63,6 +67,11 @@ const Picker = ({
   };
 
   const onExpand = (e) => {
+    if (e.target.type === 'checkbox') {
+      onCheck(e);
+      return;
+    }
+
     const itemEl = e.target.classList.contains('tagselect-item')
       ? e.target
       : e.target.parentElement;

@@ -3,7 +3,7 @@ import Picker from '../../ui/controls/TagSelectPicker.js';
 import { createOptionMap } from '../../ui/controls/TagSelector.js';
 import { loadCaasTags } from '../caas/utils.js';
 
-const TagPreview = ({ selectedTags }) => {
+const TagPreview = ({ selectedTags = [] }) => {
   const [tagString, setTagString] = useState('');
   const [copyText, setCopyText] = useState('Copy');
 
@@ -20,13 +20,8 @@ const TagPreview = ({ selectedTags }) => {
   }, [selectedTags]);
 
   const handleClick = () => {
-    if (tagString.length) {
-      navigator.clipboard.writeText(tagString);
-      setCopyText('Copied!');
-    } else {
-      setCopyText('Nothing to copy');
-    }
-
+    navigator.clipboard.writeText(tagString);
+    setCopyText('Copied!');
     setTimeout(() => {
       setCopyText('Copy');
     }, 2000);
@@ -34,7 +29,7 @@ const TagPreview = ({ selectedTags }) => {
 
   return html`
     <section class='tag-preview-container'>
-      <button onClick=${handleClick}>${copyText}</button>
+      <button disabled=${selectedTags.length === 0 ? true : false} onClick=${handleClick}>${copyText}</button>
       <div class='tag-preview'>${tagString}</div>
     </section>
   `;
@@ -63,11 +58,11 @@ const TagSelector = () => {
     return options;
   };
 
-  // useEffect(async () => {
-  //   const { tags: caasTags, errorMsg } = await loadCaasTags(tagUrl);
-  //   if (errorMsg) console.log(`Error fetching caas tags: ${errorMsg}`);
-  //   setOptions(getTagTree(caasTags));
-  // }, []);
+  useEffect(async () => {
+    const { tags: caasTags, errorMsg } = await loadCaasTags(tagUrl);
+    if (errorMsg) console.log(`Error fetching caas tags: ${errorMsg}`);
+    setOptions(getTagTree(caasTags));
+  }, []);
 
   useEffect(() => {
     const hasNestedData = Object.values(options).some((value) => typeof value !== 'string');
@@ -89,16 +84,13 @@ const TagSelector = () => {
     });
   };
 
-  const getCaasTags = async () => {
-    const { tags: caasTags, errorMsg } = await loadCaasTags(tagUrl);
-    if (errorMsg) console.log(`Error fetching caas tags: ${errorMsg}`);
-    setOptions(getTagTree(caasTags));
-  };
-
   return html`
-    <${TagPreview} selectedTags=${selectedTags} />
     <section class="tag-selector-sources">
-      <button onClick=${getCaasTags}>CaaS Tags</button>
+      <div class="col">
+        <div class="tagselect-item expanded">
+          <button class="has-children">CaaS Tags</button>
+        </div>
+      </div>
     </section>
     <${Picker}
       toggleTag=${toggleTag}
@@ -106,6 +98,7 @@ const TagSelector = () => {
       optionMap=${optionMap}
       selectedTags=${selectedTags}
     />
+    <${TagPreview} selectedTags=${selectedTags} />
   `;
 }
 

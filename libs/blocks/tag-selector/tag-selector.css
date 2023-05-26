@@ -36,12 +36,36 @@
 }
 
 .tag-selector .tagselect-picker {
-  width: calc(100% - 218px);
+  width: calc(100% - 488px);
   margin-right: 18px;
   background-color: #e0e0e0;
-  order: -1;
 }
 
 .tag-selector .tagselect-modal-search {
   top: 5px;
+  left: 18px;
+}
+
+.tag-selector-sources {
+  background-color: #e0e0e0;
+}
+
+.tag-selector-sources .col {
+  min-width: 250px;
+  margin-right: 20px;
+  overflow-y: auto;
+  padding-bottom: 10px;
+}
+
+.tag-selector-sources button {
+  padding: 0 10px;
+  height: 30px;
+  width: 100%;
+  line-height: 30px;
+  font-weight: bold;
+  white-space: nowrap;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--body-font-family);
+  font-size: var(--type-body-m-size);
 }
