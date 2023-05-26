@@ -3,22 +3,12 @@ import Picker from '../../ui/controls/TagSelectPicker.js';
 import { createOptionMap } from '../../ui/controls/TagSelector.js';
 import { loadCaasTags } from '../caas/utils.js';
 
-function processTags(tagData, tagArr = []) {
-  let tagA = tagArr.length > 0 ? tagArr : [];
+const TagPreview = ({ selectedTags }) => {
+  const [tagString, setTagString] = useState('');
+  const [copyText, setCopyText] = useState('Copy');
 
-  Object.entries(tagData).forEach((k) => {
-    tagA.push(k[1].tagID);
-    if (k[1].tags && Object.keys(k[1].tags).length > 0) {
-      processTags(k[1].tags, tagA);
-    }
-  });
-
-  return tagA;
-}
-
-function TagPreview({ selectedTags }) {
-  function handleClick() {
-    const tagString = selectedTags.reduce((rdx, tag, i, arr) => {
+  useEffect(() => {
+    const getTagString = selectedTags.reduce((rdx, tag, i, arr) => {
       if (i === arr.length - 1) {
         rdx += tag;
       } else {
@@ -26,26 +16,35 @@ function TagPreview({ selectedTags }) {
       }
       return rdx;
     }, '');
-    navigator.clipboard.writeText(tagString);
-  }
+    setTagString(getTagString);
+  }, [selectedTags]);
+
+  const handleClick = () => {
+    if (tagString.length) {
+      navigator.clipboard.writeText(tagString);
+      setCopyText('Copied!');
+    } else {
+      setCopyText('Nothing to copy');
+    }
+
+    setTimeout(() => {
+      setCopyText('Copy');
+    }, 2000);
+  };
 
   return html`
-    <div class='tag-preview-container'>
-      <p class='tag-preview'>
-        ${selectedTags.map((tag) => html`<span>${tag},</span>`)}
-      </p>
-      <button onClick=${() => handleClick()}>Copy to clipboard</button>
-    </div>
+    <section class='tag-preview-container'>
+      <button onClick=${handleClick}>${copyText}</button>
+      <div class='tag-preview'>${tagString}</div>
+    </section>
   `;
 }
 
-function TagSelector({
-  selectedTags = [],
-}) {
-  const [tags, setTags] = useState([]);
+const TagSelector = () => {
   const [options, setOptions] = useState({});
-  // const [selectedTags, setSelectedTags] = useState([]);
-  // const [lastSelected, setLastSelected] = useState();
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [optionMap, setOptionMap] = useState({});
+  const tagUrl = 'https://www.adobe.com/chimera-api/tags';
 
   // From caas-config.js
   const getTagTree = (root) => {
@@ -64,66 +63,43 @@ function TagSelector({
     return options;
   };
 
-  useEffect(async () => {
-    // async function fetchCaasData() {
-      const tagUrl = 'https://www.adobe.com/chimera-api/tags';
-    //   const tagResp = await fetch(tagUrl);
-    //   if (!tagResp.ok) return {};
-    //   const json = await tagResp.json();
-    //   return json;
-    // }
-    // const data = await fetchCaasData();
-    // // console.log('data', data);
-    // // const allTags = processTags(data.namespaces.caas.tags);
-    // const caasTags = data.namespaces.caas.tags;
-    // console.log('caasTags', caasTags);
-    const { tags: caasTags, errorMsg } = await loadCaasTags(tagUrl);
-    if (errorMsg) console.log(`Error fetching caas tags: ${errorMsg}`);
-    setTags(caasTags);
-    setOptions(getTagTree(caasTags));
-  }, []);
-
-  const [optionMap, setOptionMap] = useState({});
+  // useEffect(async () => {
+  //   const { tags: caasTags, errorMsg } = await loadCaasTags(tagUrl);
+  //   if (errorMsg) console.log(`Error fetching caas tags: ${errorMsg}`);
+  //   setOptions(getTagTree(caasTags));
+  // }, []);
 
   useEffect(() => {
-    const hasNestedData = Object.values(options).some((val) => typeof val !== 'string');
+    const hasNestedData = Object.values(options).some((value) => typeof value !== 'string');
 
     if (hasNestedData) {
       setOptionMap(createOptionMap(options));
     } else {
       setOptionMap(options);
     }
-
-    if (!Array.isArray(selectedTags)) {
-      onChange([]);
-    }
   }, [options]);
 
-  const addOption = (val) => {
-    if (!selectedTags.includes(val)) {
-      selectedTags.push(val);
-    }
-    onChange(singleSelect ? [val] : [...selectedTags]);
+  const toggleTag = (value) => {
+    setSelectedTags((tags) => {
+      if (tags.includes(value)) {
+        return tags.filter((tag) => tag !== value);
+      } else {
+        return [...tags, value];
+      }
+    });
   };
 
-  const removeOption = (val) => {
-    const optionIndex = selectedTags.indexOf(val);
-    if (optionIndex === -1) return;
-    selectedTags.splice(optionIndex, 1);
-    onChange([...selectedTags]);
+  const getCaasTags = async () => {
+    const { tags: caasTags, errorMsg } = await loadCaasTags(tagUrl);
+    if (errorMsg) console.log(`Error fetching caas tags: ${errorMsg}`);
+    setOptions(getTagTree(caasTags));
   };
-
-  const toggleTag = (val) => {
-    if (selectedTags.includes(val)) {
-      removeOption(val);
-    } else {
-      addOption(val);
-    }
-  };
-
-  // <${TagPreview} selectedTags=${selectedTags} />
 
   return html`
+    <${TagPreview} selectedTags=${selectedTags} />
+    <section class="tag-selector-sources">
+      <button onClick=${getCaasTags}>CaaS Tags</button>
+    </section>
     <${Picker}
       toggleTag=${toggleTag}
       options=${options}

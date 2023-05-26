@@ -30,15 +30,14 @@ const Picker = ({
   singleSelect = false,
   selectedTags = [],
 }) => {
-  const [columns, setColumns] = useState([]);
+  const [columns, setColumns] = useState();
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
     setColumns([getCols(options)]);
-  }, [options]);
+  }, [options, optionMap]);
 
   useEffect(() => {
     if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
@@ -73,6 +72,7 @@ const Picker = ({
 
     const cols = [];
     const addColumn = (option) => {
+      if (!option) return;
       cols.unshift(getCols(option));
       if (option.parent) {
         addColumn(option.parent);
@@ -87,6 +87,8 @@ const Picker = ({
   };
 
   const getCols = (root) => {
+    if (!root) return;
+
     const items = Object.entries(root.children || root).map(([id, option]) => {
       const isChecked = selectedTags.includes(id);
       return html`<${Tag}
@@ -120,7 +122,7 @@ const Picker = ({
   };
 
   return html`
-    <div class="tagselect-picker">
+    <section class="tagselect-picker">
       <input
         class="tagselect-modal-search"
         placeholder="Search..."
@@ -129,7 +131,7 @@ const Picker = ({
       />
       ${!isSearching && html`<div class="tagselect-modal-cols">${columns}</div>`}
       ${isSearching && html`<div class="tagselect-modal-table">${getSearchResults()}</div>`}
-    </div>
+    </section>
   `;
 };
 
