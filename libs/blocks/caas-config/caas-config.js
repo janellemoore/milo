@@ -359,9 +359,9 @@ const UiPanel = () => html`
 
 const TagsPanel = ({ tagsData }) => {
   if (!tagsData) return '';
+  const contentTypeTags = getTagList(tagsData['content-type'].tags);
 
   const [allTags, setAllTags] = useState();
-  const contentTypeTags = getTagList(tagsData['content-type'].tags);
   const context = useContext(ConfiguratorContext);
 
   const onLogicTagChange = (prop) => (values) => {
