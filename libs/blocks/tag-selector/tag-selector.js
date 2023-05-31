@@ -61,19 +61,16 @@ const TagSelector = () => {
   useEffect(async () => {
     const { tags: caasTags, errorMsg } = await loadCaasTags(tagUrl);
     if (errorMsg) console.log(`Error fetching caas tags: ${errorMsg}`);
-    setOptions(getTagTree(caasTags));
-  }, []);
 
-  useEffect(() => {
-    const hasNestedData = options ? Object.values(options).some((value) => typeof value !== 'string') : null;
+    const opts = getTagTree(caasTags);
+    setOptions(opts);
 
-    if (hasNestedData) {
-      setOptionMap(createOptionMap(options));
+    if (opts && Object.values(opts).some((value) => typeof value !== 'string')) {
+      setOptionMap(createOptionMap(opts));
     } else {
-      setOptionMap(options);
+      setOptionMap(opts);
     }
-    console.log('setoptionmap');
-  }, [options]);
+  }, []);
 
   const toggleTag = (value) => {
     setSelectedTags((tags) => {
@@ -93,12 +90,15 @@ const TagSelector = () => {
         </div>
       </div>
     </section>
-    <${Picker}
-      toggleTag=${toggleTag}
-      options=${options}
-      optionMap=${optionMap}
-      selectedTags=${selectedTags}
-    />
+    ${options &&
+      optionMap &&
+      html`<${Picker}
+        toggleTag=${toggleTag}
+        options=${options}
+        optionMap=${optionMap}
+        selectedTags=${selectedTags}
+      />`
+    }
     <${TagPreview} selectedTags=${selectedTags} />
   `;
 }

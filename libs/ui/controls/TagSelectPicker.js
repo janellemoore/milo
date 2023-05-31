@@ -38,7 +38,7 @@ const Picker = ({
 
   useEffect(() => {
     setColumns([getCol(options)]);
-  }, [options]);
+  }, []);
 
   useEffect(() => {
     if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
@@ -49,7 +49,6 @@ const Picker = ({
   }, [debouncedSearchTerm]);
 
   const onCheck = (e) => {
-    console.log('onCheck');
     e.preventDefault();
     const inputEl = e.currentTarget.firstChild;
 
@@ -68,7 +67,6 @@ const Picker = ({
   };
 
   const onExpand = (e) => {
-    console.log('onExpand');
     if (e.target.type === 'checkbox') {
       onCheck(e);
       return;
@@ -94,7 +92,6 @@ const Picker = ({
     addColumn(optionMap[selectedKey]);
     cols.unshift(getCol(options)); // add the root
 
-    console.log(optionMap[selectedKey]);
     setColumns(cols);
   };
 

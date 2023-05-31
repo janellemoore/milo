@@ -183,7 +183,7 @@ const TagSelect = ({
     if (!Array.isArray(value)) {
       onChange([]);
     }
-  }, [options]);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
