@@ -1,6 +1,5 @@
 import { html, render, useState, useEffect } from '../../deps/htm-preact.js';
 import Picker from '../../ui/controls/TagSelectPicker.js';
-import { createOptionMap } from '../../ui/controls/TagSelector.js';
 import { loadCaasTags } from '../caas/utils.js';
 
 const TagPreview = ({ selectedTags = [] }) => {
@@ -56,6 +55,24 @@ const TagSelector = () => {
       return opts;
     }, {});
     return options;
+  };
+
+  // From TagSelector.js
+  const createOptionMap = (root) => {
+    const newOptionMap = {};
+    const parseNode = (nodes, parent) => {
+      Object.entries(nodes).forEach(([key, val]) => {
+        newOptionMap[key] = val;
+        if (parent) {
+          newOptionMap[key].parent = parent;
+        }
+        if (val.children) {
+          parseNode(val.children, val);
+        }
+      });
+    };
+    parseNode(root);
+    return newOptionMap;
   };
 
   useEffect(async () => {

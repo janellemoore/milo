@@ -130,7 +130,7 @@ const TagSelectModal = ({
   `;
 };
 
-export const createOptionMap = (root) => {
+const createOptionMap = (root) => {
   const newOptionMap = {};
   const parseNode = (nodes, parent) => {
     Object.entries(nodes).forEach(([key, val]) => {
