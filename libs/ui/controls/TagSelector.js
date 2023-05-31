@@ -60,7 +60,8 @@ const TagSelectDropdown = ({
     if (onSelect) onSelect(e.target.dataset.value);
   };
 
-  const getItems = () => Object.entries(options)
+  const getItems = () => {
+    return Object.entries(options)
     .sort(([, a], [, b]) => {
       const labelA = a.toLowerCase();
       const labelB = b.toLowerCase();
@@ -74,26 +75,26 @@ const TagSelectDropdown = ({
         && label.toLowerCase().indexOf(searchText.toLowerCase()) === -1;
 
       return html`
-          <li key=${labelVal}>
-            <div
-              class="tagselect-dropdown-item ${index === hoverIndex && 'hover'} ${(isDisabled
-                || searchFiltered)
-              && 'hide'}"
-              data-value=${labelVal}
-              onClick=${!isDisabled && onItemClick}
-            >
-              ${label}
-            </div>
-          </li>
-        `;
-    });
+        <li key=${labelVal}>
+          <div
+            class="tagselect-dropdown-item ${index === hoverIndex && 'hover'} ${(isDisabled
+              || searchFiltered)
+            && 'hide'}"
+            data-value=${labelVal}
+            onClick=${!isDisabled && onItemClick}
+          >
+            ${label}
+          </div>
+        </li>
+      `;
+  })};
 
   return html`
     <div class="tagselect-dropdown is-open">
       ${displaySearch && Search()}
       <div class="tagselect-dropdown-options">
         <ul>
-          ${getItems()}
+        ${getItems()}
         </ul>
       </div>
     </div>
@@ -183,7 +184,7 @@ const TagSelect = ({
     if (!Array.isArray(value)) {
       onChange([]);
     }
-  }, []);
+  }, [options]);
 
   useEffect(() => {
     if (isOpen) {

@@ -359,9 +359,9 @@ const UiPanel = () => html`
 
 const TagsPanel = ({ tagsData }) => {
   if (!tagsData) return '';
-  const contentTypeTags = getTagList(tagsData['content-type'].tags);
 
-  const allTags = getTagTree(tagsData);
+  const [allTags, setAllTags] = useState();
+  const contentTypeTags = getTagList(tagsData['content-type'].tags);
   const context = useContext(ConfiguratorContext);
 
   const onLogicTagChange = (prop) => (values) => {
@@ -371,6 +371,10 @@ const TagsPanel = ({ tagsData }) => {
       value: values,
     });
   };
+
+  useEffect(() => {
+    setAllTags(getTagTree(tagsData));
+  }, [tagsData]);
 
   return html`
     <${DropdownSelect}

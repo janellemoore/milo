@@ -36,7 +36,7 @@ const TagPreview = ({ selectedTags = [] }) => {
 }
 
 const TagSelector = () => {
-  const [options, setOptions] = useState({});
+  const [options, setOptions] = useState();
   const [selectedTags, setSelectedTags] = useState([]);
   const [optionMap, setOptionMap] = useState({});
   const tagUrl = 'https://www.adobe.com/chimera-api/tags';
@@ -65,13 +65,14 @@ const TagSelector = () => {
   }, []);
 
   useEffect(() => {
-    const hasNestedData = Object.values(options).some((value) => typeof value !== 'string');
+    const hasNestedData = options ? Object.values(options).some((value) => typeof value !== 'string') : null;
 
     if (hasNestedData) {
       setOptionMap(createOptionMap(options));
     } else {
       setOptionMap(options);
     }
+    console.log('setoptionmap');
   }, [options]);
 
   const toggleTag = (value) => {

@@ -37,8 +37,8 @@ const Picker = ({
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
-    setColumns([getCols(options)]);
-  }, [options, optionMap]);
+    setColumns([getCol(options)]);
+  }, [options]);
 
   useEffect(() => {
     if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
@@ -49,6 +49,7 @@ const Picker = ({
   }, [debouncedSearchTerm]);
 
   const onCheck = (e) => {
+    console.log('onCheck');
     e.preventDefault();
     const inputEl = e.currentTarget.firstChild;
 
@@ -67,6 +68,7 @@ const Picker = ({
   };
 
   const onExpand = (e) => {
+    console.log('onExpand');
     if (e.target.type === 'checkbox') {
       onCheck(e);
       return;
@@ -82,7 +84,7 @@ const Picker = ({
     const cols = [];
     const addColumn = (option) => {
       if (!option) return;
-      cols.unshift(getCols(option));
+      cols.unshift(getCol(option));
       if (option.parent) {
         addColumn(option.parent);
       }
@@ -90,12 +92,13 @@ const Picker = ({
 
     const { key: selectedKey } = itemEl.dataset;
     addColumn(optionMap[selectedKey]);
-    cols.unshift(getCols(options)); // add the root
+    cols.unshift(getCol(options)); // add the root
 
+    console.log(optionMap[selectedKey]);
     setColumns(cols);
   };
 
-  const getCols = (root) => {
+  const getCol = (root) => {
     if (!root) return;
 
     const items = Object.entries(root.children || root).map(([id, option]) => {
