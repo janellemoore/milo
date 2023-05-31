@@ -93,7 +93,7 @@ const TagSelectDropdown = ({
       ${displaySearch && Search()}
       <div class="tagselect-dropdown-options">
         <ul>
-        ${getItems()}
+          ${getItems()}
         </ul>
       </div>
     </div>
