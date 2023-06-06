@@ -1,15 +1,24 @@
 import { decorateLinkAnalytics } from '../martech/attributes.js';
 
 export function decorateButtons(el, size) {
-  const buttons = el.querySelectorAll('em a, strong a');
+  const buttons = el.querySelectorAll('em a, strong a, a em, a strong');
   if (buttons.length === 0) return;
   buttons.forEach((button) => {
-    const parent = button.parentElement;
-    const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    button.classList.add('con-button', buttonType);
-    if (size) button.classList.add(size); /* button-l, button-xl */
-    parent.insertAdjacentElement('afterend', button);
-    parent.remove();
+    if (button.nodeName === 'A') {
+      const parent = button.parentElement;
+      const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
+      button.classList.add('con-button', buttonType);
+      if (size) button.classList.add(size); /* button-l, button-xl */
+      parent.insertAdjacentElement('afterend', button);
+      parent.remove();
+    } else {
+      const parent = button.parentElement;
+      const buttonType = button.nodeName === 'STRONG' ? 'blue' : 'outline';
+      parent.classList.add('con-button', buttonType);
+      if (size) parent.classList.add(size); /* button-l, button-xl */
+      parent.innerHTML = button.innerHTML;
+      parent.remove();
+    }
   });
   const actionArea = buttons[0].closest('p, div');
   if (actionArea) {
@@ -56,6 +65,15 @@ export function decorateBlockBg(block, node) {
       [...node.children].forEach((e, i) => {
         /* c8 ignore next */
         e.classList.add(viewports[i]);
+        /* const image = e.querySelector('img');
+        if (image) {
+          const text = e.textContent.trim();
+          if (text !== '') {
+            const points = text?.slice(text.indexOf(':') + 1).split(',');
+            const [x, y = ''] = points;
+            image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
+          }
+        } */
       });
     }
   }
