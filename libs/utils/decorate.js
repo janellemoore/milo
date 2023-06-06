@@ -3,7 +3,7 @@ import { decorateLinkAnalytics } from '../martech/attributes.js';
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
-  const buttonTypeMap = {'STRONG': 'blue', 'EM': 'outline', 'A': 'blue'};
+  const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
   buttons.forEach((button) => {
     const parent = button.parentElement;
     const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
@@ -20,7 +20,10 @@ export function decorateButtons(el, size) {
   const actionArea = buttons[0].closest('p, div');
   if (actionArea) {
     actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-xl');
+    actionArea.nextElementSibling?.classList.add(
+      'supplemental-text',
+      'body-xl'
+    );
   }
 }
 
@@ -28,7 +31,8 @@ export function decorateIconArea(el) {
   const icons = el.querySelectorAll('.icon');
   icons.forEach((icon) => {
     icon.parentElement.classList.add('icon-area');
-    if (icon.textContent.includes('persona')) icon.parentElement.classList.add('persona-area');
+    if (icon.textContent.includes('persona'))
+      icon.parentElement.classList.add('persona-area');
   });
 }
 
@@ -40,12 +44,17 @@ export function decorateBlockText(el, config = ['m', 's', 'm']) {
         h.classList.add(`heading-${config[0]}`);
       });
       if (config[2]) {
-        headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
+        headings[0]?.previousElementSibling?.classList.add(
+          `detail-${config[2]}`
+        );
         decorateIconArea(el);
       }
     }
     const emptyPs = el.querySelectorAll(':scope p:not([class])');
-    if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
+    if (emptyPs)
+      emptyPs.forEach((p) => {
+        p.classList.add(`body-${config[1]}`);
+      });
   }
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
@@ -62,6 +71,15 @@ export function decorateBlockBg(block, node) {
       [...node.children].forEach((e, i) => {
         /* c8 ignore next */
         e.classList.add(viewports[i]);
+        /* const image = e.querySelector('img');
+        if (image) {
+          const text = e.textContent.trim();
+          if (text !== '') {
+            const points = text?.slice(text.indexOf(':') + 1).split(',');
+            const [x, y = ''] = points;
+            image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
+          }
+        } */
       });
     }
   }
@@ -74,24 +92,31 @@ export function decorateBlockBg(block, node) {
 export function getBlockSize(el, defaultSize = 1) {
   const sizes = ['small', 'medium', 'large', 'xlarge'];
   if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
-  return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
+  return (
+    sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize]
+  );
 }
 
 function applyTextOverrides(el, override) {
-  const parts = override.split("-");
+  const parts = override.split('-');
   const type = parts[1];
   const els = el.querySelectorAll(`[class^="${type}"]`);
   if (!els.length) return;
-  els.forEach(elem => {
-    const replace = [...elem.classList].find(i => i.startsWith(type));
+  els.forEach((elem) => {
+    const replace = [...elem.classList].find((i) => i.startsWith(type));
     elem.classList.replace(replace, `${parts[1]}-${parts[0]}`);
   });
 }
 
-export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail']) {
-  const overrides = [...el.classList].filter(elClass => options.findIndex(ovClass => elClass.endsWith(ovClass)) >= 0);
+export function decorateTextOverrides(
+  el,
+  options = ['-heading', '-body', '-detail']
+) {
+  const overrides = [...el.classList].filter(
+    (elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0
+  );
   if (!overrides.length) return;
-  overrides.forEach(override => {
+  overrides.forEach((override) => {
     applyTextOverrides(el, override);
     el.classList.remove(override);
   });
