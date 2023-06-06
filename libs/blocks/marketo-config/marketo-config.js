@@ -166,7 +166,7 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
   return html`
     <div class="tool-header">
       <div class="tool-title">
-        <h1>${title}</h1>
+        <h1>${title} Configurator</h1>
       </div>
       <${CopyBtn} getContent=${getContent} configFormValidation=${configFormValidation} />
     </div>
