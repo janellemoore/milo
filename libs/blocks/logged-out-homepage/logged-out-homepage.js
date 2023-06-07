@@ -33,19 +33,17 @@ function goToDataHref() {
 function parseBlockMetaData(el) {
   const rows = el.querySelectorAll(':scope > div');
   let metaDataStarted = false;
+  let metaDataStarted = false;
   const results = {
     rows: [],
     metaData: {},
   };
   rows.forEach((row) => {
     if (metaDataStarted) {
+    if (metaDataStarted) {
       const children = row.querySelectorAll(':scope > div');
       if (children.length >= 2) {
-        const key = children[0].innerText
-          .toLowerCase()
-          .trim()
-          .split(' ')
-          .join('-');
+        const key = children[0].innerText.toLowerCase().trim().split(' ').join('-');
         const image = children[1].querySelector('img');
         const link = children[1].querySelector('a');
         if (image) {
@@ -60,6 +58,7 @@ function parseBlockMetaData(el) {
     } else {
       const innerText = row.innerText.toLowerCase().trim().split(' ').join('');
       if (innerText === 'blockmetadata') {
+        metaDataStarted = true;
         metaDataStarted = true;
         row.remove();
       } else {
