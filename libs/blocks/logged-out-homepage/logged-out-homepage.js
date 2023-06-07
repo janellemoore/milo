@@ -27,13 +27,13 @@ function goToDataHref() {
 
 function parseBlockMetaData(el) {
   const rows = el.querySelectorAll(':scope > div');
-  let metaDataFound = false;
+  let metaDataStarted = false;
   const results = {
     rows: [],
     metaData: {},
   };
   rows.forEach((row) => {
-    if (metaDataFound) {
+    if (metaDataStarted) {
       const children = row.querySelectorAll(':scope > div');
       if (children.length === 2) {
         const key = children[0].innerText
@@ -55,7 +55,7 @@ function parseBlockMetaData(el) {
     } else {
       const innerText = row.innerText.toLowerCase().trim().split(' ').join('');
       if (innerText === 'blockmetadata') {
-        metaDataFound = true;
+        metaDataStarted = true;
         row.remove();
       } else {
         results.rows.push(row);
