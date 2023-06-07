@@ -4,20 +4,21 @@ export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, a em, a strong');
   if (buttons.length === 0) return;
   buttons.forEach((button) => {
+    let style = button;
+    let link = button.parentElement;
     if (button.nodeName === 'A') {
-      const parent = button.parentElement;
-      const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-      button.classList.add('con-button', buttonType);
-      if (size) button.classList.add(size); /* button-l, button-xl */
-      parent.insertAdjacentElement('afterend', button);
-      parent.remove();
+      style = button.parentElement;
+      link = button;
+    }
+    const buttonType = style.nodeName === 'STRONG' ? 'blue' : 'outline';
+    link.classList.add('con-button', buttonType);
+    if (size) link.classList.add(size);
+
+    if (button.nodeName === 'A') {
+      style.insertAdjacentElement('afterend', link);
+      style.remove();
     } else {
-      const parent = button.parentElement;
-      const buttonType = button.nodeName === 'STRONG' ? 'blue' : 'outline';
-      parent.classList.add('con-button', buttonType);
-      if (size) parent.classList.add(size); /* button-l, button-xl */
-      parent.innerHTML = button.innerHTML;
-      parent.remove();
+      link.innerHTML = style.innerHTML;
     }
   });
   const actionArea = buttons[0].closest('p, div');
@@ -47,7 +48,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm']) {
         decorateIconArea(el);
       }
     }
-    const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
+    const emptyPs = el.querySelectorAll(':scope p:not([class])');
     if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
   }
   decorateButtons(el);
@@ -87,4 +88,24 @@ export function getBlockSize(el, defaultSize = 1) {
   const sizes = ['small', 'medium', 'large', 'xlarge'];
   if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
+}
+
+function applyTextOverrides(el, override) {
+  const parts = override.split('-');
+  const type = parts[1];
+  const els = el.querySelectorAll(`[class^="${type}"]`);
+  if (!els.length) return;
+  els.forEach((elem) => {
+    const replace = [...elem.classList].find((i) => i.startsWith(type));
+    elem.classList.replace(replace, `${parts[1]}-${parts[0]}`);
+  });
+}
+
+export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail']) {
+  const overrides = [...el.classList].filter((elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0);
+  if (!overrides.length) return;
+  overrides.forEach((override) => {
+    applyTextOverrides(el, override);
+    el.classList.remove(override);
+  });
 }
